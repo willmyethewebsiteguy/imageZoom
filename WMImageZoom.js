@@ -7,7 +7,7 @@
 (function () {
   const ps = {
     cssId: 'wm-image-zoom',
-    cssFile: 'https://assets.codepen.io/3198845/WMImageZoomTESTINGONLY.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.001/styles.min.css'
   };
   const defaults = {
     
