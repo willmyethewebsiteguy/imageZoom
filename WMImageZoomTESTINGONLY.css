@@ -1,0 +1,38 @@
+/* ==========
+Version 0.1
+Image Zoom Blocks For Squarespace
+Copyright Will-Myers
+========== */
+
+.wm-zoom-container {
+  --scale-amount: 2;
+  --x-pos: 0;
+  --y-pos: 0;
+  overflow:hidden;
+  user-select:none;
+  height:100%;
+}
+.wm-zoom-container img{
+  object-position: center !important;
+  transform: scale(1);
+  transition: transform .2s ease,
+    transform-origin .2s ease;
+  transform-origin: center;
+  -webkit-touch-callout: none;
+  user-select:none;
+}
+.wm-zoom-container.active-zoom img{
+  transform-origin: var(--x-pos) var(--y-pos) !important;
+  transform: scale(var(--scale-amount)) !important;
+  transition: transform .2s ease;
+}
+[data-wm-image-zoom] .image-block-wrapper:after {
+  pointer-events:none;
+}
+
+@media(hover:none){
+  .wm-zoom-container img{
+      /*transition: transform .2s ease, 
+        transform-origin .2s ease;*/
+  }
+}
