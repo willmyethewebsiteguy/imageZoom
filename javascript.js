@@ -3,14 +3,15 @@
  * Zoom Images For Squarespace
  * Copyright Will Myers
 **/
-
 (function () {
   const ps = {
     cssId: 'wm-image-zoom',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.001/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.002/styles.min.css'
   };
   const defaults = {
-    
+    cursors:{
+      dot:`<div class="zoom-follow-cursor circle"></div>`
+    }
   };
   const utils = {
     /* Emit a custom event */
@@ -61,6 +62,22 @@
           fn.apply(context, args);
         });
       }
+    },
+    getPropertyValue: function(el, prop) {
+      let styles = window.getComputedStyle(el),
+          value = styles.getPropertyValue(prop);
+      return value;
+    },
+    unescapeSlashes: function(str) {
+      let parsedStr = str.replace(/(^|[^\\])(\\\\)*\\$/, "$&\\");
+      parsedStr = parsedStr.replace(/(^|[^\\])((\\\\)*")/g, "$1\\$2");
+
+      try {
+        parsedStr = JSON.parse(`"${parsedStr}"`);
+      } catch(e) {
+        return str;
+      }
+      return parsedStr ;
     }
   }
 
@@ -68,25 +85,84 @@
 
     let global = window.wmTabsSettings || {};
 
+    
+    function addCustomCursor(instance) {
+      if (!utils.getPropertyValue(instance.settings.container, '--cursor')) return
+      let container = instance.settings.container,
+          cursorEl = utils.getPropertyValue(instance.settings.container, '--cursor').trim();
+      
+      if (cursorEl.substring(0, 1) == '"') {
+        cursorEl = utils.unescapeSlashes(cursorEl) // Unesacpe Slashes
+          .slice(1, -1); // Remove surrounding quotes
+      }
+
+      if (defaults.cursors[cursorEl]) cursorEl = defaults.cursors[cursorEl];
+
+      function addCursor(){
+        container.insertAdjacentHTML('beforeend', cursorEl)
+      }
+      addCursor();
+
+      
+      //Follow Cursor
+      let customCursor = instance.settings.customCursor;
+      
+      let showCursor = (e) => {
+        container.classList.add('follow-cursor')
+      }
+      let moveCursor = (e)=> {        
+        const rect = container.getBoundingClientRect();
+        const mouseY = (e.clientY || e.touches[0].clientY) - rect.top;
+        const mouseX = (e.clientX || e.touches[0].clientX) - rect.left;
+
+        customCursor.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0)`;
+
+      }
+      let hideCursor = (e) => {
+        container.classList.remove('follow-cursor')
+      }
+
+      container.addEventListener('mouseenter', showCursor)
+      container.addEventListener('mousemove', moveCursor);
+      container.addEventListener('mouseleave', hideCursor)
+
+    }
+    
+    
     /**
      * Create Hover Event Listener
      * @param  {Constructor} instance The current instantiation
      **/
     function createHoverListener(instance) {
       let img = instance.settings.image,
-          container = instance.settings.container;
+          container = instance.settings.container,
+          zoomLock = false;
 
       function cancelZoom() {
         container.classList.remove('active-zoom');
       }
+
+      function preventZoom() {
+        zoomLock = true;
+      }
+      function allowZoom() {
+        zoomLock = true;
+      }
+      function toggleZoomLock() {
+        zoomLock = !zoomLock;
+      }
       
       function initZoom(e) {
+        if (zoomLock) return;
+        
+        //Cancel Zoom if more than two fingers moving
         if (e.touches?.length > 1) {
           cancelZoom();
           return;
         }
-        if (e.target.closest('a') && e.touches) return;
         
+        //Cancel Zoom if Img is a link and touch is a finger (not stylus)
+        if (e.target.closest('a') && e.touches?.[0]) return;
         e.preventDefault();
         e.stopPropagation();
 
@@ -105,12 +181,9 @@
         container.style.setProperty('--y-pos', `${y}px`);
       }
 
-      container.addEventListener('mouseleave', cancelZoom)
-      container.addEventListener('mousemove', initZoom)
-      /*document.addEventListener('touchend', (e) => {
-        if (container.contains(e.target)) return;
-        cancelZoom()
-      })*/
+      container.addEventListener('mouseleave', cancelZoom);
+      container.addEventListener('mousemove', initZoom);
+      container.addEventListener('click', toggleZoomLock);
 
       container.addEventListener('touchstart', initZoom)
       container.addEventListener('touchmove', initZoom)
@@ -175,7 +248,13 @@
         get image() {
           return this.container.querySelector("img");
         },
+        get customCursor() {
+          return this.container.querySelector('.zoom-follow-cursor');
+        }
       };
+      
+      // Add Custom Cursor
+      addCustomCursor(this);
 
       // Add Loading Event Listener
       createLoadListener(this);
@@ -269,9 +348,9 @@
     //Build HTML from Selectors
     let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom])');
     for (const el of initImageBlocks) {
-      let style = window.getComputedStyle(el),
-          active = (style.getPropertyValue('--wm-image-zoom') === 'true');
-      if (active) {
+      let value = utils.getPropertyValue(el, '--wm-image-zoom');
+      console.log(value);
+      if (value.includes('true')) {
         try {
           new BuildFromImgBlock(el)        
         } catch (err) {
