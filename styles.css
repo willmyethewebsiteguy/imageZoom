@@ -5,12 +5,11 @@ Copyright Will-Myers
 ========== */
 
 .wm-zoom-container {
-  --scale-amount: 2;
   --x-pos: 0;
   --y-pos: 0;
-  overflow:hidden;
-  user-select:none;
-  height:100%;
+  overflow: hidden;
+  user-select: none;
+  height: 100%;
 }
 .wm-zoom-container img{
   object-position: center !important;
@@ -23,16 +22,39 @@ Copyright Will-Myers
 }
 .wm-zoom-container.active-zoom img{
   transform-origin: var(--x-pos) var(--y-pos) !important;
-  transform: scale(var(--scale-amount)) !important;
+  transform: scale(var(--scale-amount, 2)) !important;
   transition: transform .2s ease;
 }
 [data-wm-image-zoom] .image-block-wrapper:after {
   pointer-events:none;
 }
 
+/*
+ * If on a Non-Hover Device
+*/
 @media(hover:none){
-  .wm-zoom-container img{
-      /*transition: transform .2s ease, 
-        transform-origin .2s ease;*/
+  /* Prevent Zooming on Images with Links*/
+  a.wm-zoom-container, a .wm-zoom-container {
+    --scale-amount: 1 !important;
   }
+  /* Prevent Cursor from Appearing*/
+  .wm-zoom-container .zoom-follow-cursor {
+    display:none !important;
+  }
+}
+
+
+.wm-zoom-container.follow-cursor{
+  cursor:none;
+}
+.wm-zoom-container.follow-cursor .zoom-follow-cursor{
+  display:inline-block;
+}
+.zoom-follow-cursor.circle {
+  display: none;
+  position:absolute;
+  width: var(--cursor-size, 7px);
+  height: var(--cursor-size, 7px);
+  background-color: var(--cursor-color, white);
+  border-radius: 50%;
 }
