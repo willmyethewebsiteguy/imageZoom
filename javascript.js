@@ -1,12 +1,12 @@
 /**
- * Version 0.1
+ * Version 1.0
  * Zoom Images For Squarespace
  * Copyright Will Myers
 **/
 (function () {
   const ps = {
     cssId: 'wm-image-zoom',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.002/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.003/styles.min.css'
   };
   const defaults = {
     cursors:{
@@ -85,7 +85,6 @@
 
     let global = window.wmTabsSettings || {};
 
-    
     function addCustomCursor(instance) {
       if (!utils.getPropertyValue(instance.settings.container, '--cursor')) return
       let container = instance.settings.container,
@@ -127,7 +126,6 @@
       container.addEventListener('mouseleave', hideCursor)
 
     }
-    
     
     /**
      * Create Hover Event Listener
@@ -238,6 +236,7 @@
      * @param {Object} options  User options and settings
      */
     function Constructor(el, options = {}) {
+      
       //Add CSS Function
       this.addCSS();
       let local = getLocalSettings(el);
@@ -311,7 +310,9 @@
   let BuildFromImgBlock = (function(){
     
     function addClasses(instance) {
-      instance.elements.container.classList.add('wm-zoom-container');
+      instance.elements.images.forEach(img => {
+        img.parentElement.classList.add('wm-zoom-container')
+      })
       instance.elements.block.setAttribute('data-wm-image-zoom', '')
     }
     
@@ -325,18 +326,16 @@
       // Add Elements Obj
       this.elements = {
         block: el,
-        get container() {
-          return this.block.querySelector("img").parentElement;
-        },
-        get image() {
-          return this.container.querySelector("img");
+        get images() {
+          return this.block.querySelectorAll(":not(.sqs-gallery-thumbnails) > img");
         }
       };
       
       //Add Classes & Attributes
       addClasses(this)
       
-      new WMImageZoom(this.elements.container);
+      //Init
+      this.elements.images.forEach(img => new WMImageZoom(img.parentElement))
     }
 
     return Constructor;
@@ -346,10 +345,9 @@
     if (utils.preventPlugin()) return;
 
     //Build HTML from Selectors
-    let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom])');
+    let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom]), .gallery-block:not([data-wm-image-zoom])');
     for (const el of initImageBlocks) {
       let value = utils.getPropertyValue(el, '--wm-image-zoom');
-      console.log(value);
       if (value.includes('true')) {
         try {
           new BuildFromImgBlock(el)        
