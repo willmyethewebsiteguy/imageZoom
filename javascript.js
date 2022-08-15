@@ -138,13 +138,14 @@
 
       function cancelZoom() {
         container.classList.remove('active-zoom');
+        allowZoom();
       }
 
       function preventZoom() {
         zoomLock = true;
       }
       function allowZoom() {
-        zoomLock = true;
+        zoomLock = false;
       }
       function toggleZoomLock() {
         zoomLock = !zoomLock;
@@ -311,9 +312,25 @@
     
     function addClasses(instance) {
       instance.elements.images.forEach(img => {
-        img.parentElement.classList.add('wm-zoom-container')
+        /*Main Class for Zoom Container*/
+        img.parentElement.classList.add('wm-zoom-container');
+        
+        /*For Images within Gallery Section*/
+        let dimensions = img.dataset.imageDimensions;
+        if (dimensions) {
+          let width  = parseInt(dimensions.split('x')[0]),
+              height = parseInt(dimensions.split('x')[1]);
+          
+          //For LightBox Images
+          if (width > height && img.closest('.gallery-lightbox-item-src')) {
+            img.closest('.gallery-lightbox-item-src').classList.add('landscape')
+          }
+          //For Slideshow Images
+          if (width > height && img.closest('.gallery-slideshow-item-src')) {
+            img.closest('.gallery-slideshow-item-src').classList.add('landscape')
+          }
+        }
       })
-      instance.elements.block.setAttribute('data-wm-image-zoom', '')
     }
     
     /**
@@ -322,15 +339,37 @@
      * @param {Object} options  User options and settings
      */
     function Constructor(el, options = {}) {
-
+      
       // Add Elements Obj
       this.elements = {
         block: el,
         get images() {
           return this.block.querySelectorAll(":not(.sqs-gallery-thumbnails) > img");
+        },
+        get isLightboxImage() {
+          return this.block.querySelector('button.lightbox') ? true : false
+        },
+        get isLightboxSection() {
+          return this.block.dataset.props ? JSON.parse(this.block.dataset.props)?.lightboxEnabled :false
         }
       };
-      
+
+      //Mark As Done
+      this.elements.block.setAttribute('data-wm-image-zoom', '')
+
+      /*If it's a Gallery section with a Lightbox*/
+      if (this.elements.isLightboxSection) {
+        let sectionID = this.elements.block.closest('.page-section').dataset['sectionId'],
+            lightboxSection = document.querySelector(`[data-lightbox-section-id="${sectionID}"]`)
+        this.elements.block = lightboxSection;
+        this.elements.block.setAttribute('data-wm-image-zoom', '')
+      }
+
+    /*If it's an Image Block with a Lightbox*/
+    if(this.elements.isLightboxImage) {
+
+    }
+
       //Add Classes & Attributes
       addClasses(this)
       
@@ -345,7 +384,7 @@
     if (utils.preventPlugin()) return;
 
     //Build HTML from Selectors
-    let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom]), .gallery-block:not([data-wm-image-zoom])');
+    let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom]), .gallery-block:not([data-wm-image-zoom]), .gallery-grid--layout-grid:not([data-wm-image-zoom]), .gallery-strips--layout-strips:not([data-wm-image-zoom]), .gallery-section .gallery-masonry:not([data-wm-image-zoom])');
     for (const el of initImageBlocks) {
       let value = utils.getPropertyValue(el, '--wm-image-zoom');
       if (value.includes('true')) {
