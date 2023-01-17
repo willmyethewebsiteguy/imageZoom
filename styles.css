@@ -3,8 +3,6 @@ Version 1.0
 Image Zoom Blocks For Squarespace
 Copyright Will-Myers
 ========== */
-
-
 .wm-zoom-container {
   --x-pos: 0;
   --y-pos: 0;
@@ -62,6 +60,11 @@ Copyright Will-Myers
   border-radius: 50%;
   top: 0;
   left: 0;
+}
+
+/*For Gallery => Grid:Simple Sections*/
+.gallery-grid-item .wm-zoom-container{
+  height: 0 !important;
 }
 
 
