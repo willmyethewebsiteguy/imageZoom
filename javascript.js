@@ -6,7 +6,7 @@
 (function () {
   const ps = {
     cssId: 'wm-image-zoom',
-    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0.005/styles.min.css'
+    cssFile: 'https://cdn.jsdelivr.net/gh/willmyethewebsiteguy/imageZoom@1.0/styles.min.css'
   };
   const defaults = {
     cursors:{
