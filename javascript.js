@@ -86,7 +86,8 @@
     let global = window.wmTabsSettings || {};
 
     function addCustomCursor(instance) {
-      if (!utils.getPropertyValue(instance.settings.container, '--cursor')) return
+      if (!utils.getPropertyValue(instance.settings.container, '--cursor')) return;
+      if (instance.settings.container.querySelector('.zoom-follow-cursor')) return;
       let container = instance.settings.container,
           cursorEl = utils.getPropertyValue(instance.settings.container, '--cursor').trim();
       
@@ -127,10 +128,6 @@
 
     }
     
-    /**
-     * Create Hover Event Listener
-     * @param  {Constructor} instance The current instantiation
-     **/
     function createHoverListener(instance) {
       let img = instance.settings.image,
           container = instance.settings.container,
@@ -190,10 +187,6 @@
       container.addEventListener('touchleave', cancelZoom)
     }
 
-    /**
-     * Create Resize Event Listener
-     * @param  {Constructor} instance The current instantiation
-     **/
     function createResizeListener(instance) {
       function handleEvent() {
       }
@@ -201,10 +194,6 @@
       window.addEventListener("resize", handleEvent);
     }
 
-    /**
-     * Create Page Load Event Listener
-     * @param  {Constructor} instance The current instantiation
-     **/
     function createLoadListener(instance) {
       function handleEvent() {
 
@@ -214,10 +203,6 @@
       window.addEventListener("DOMContentLoaded", handleEvent);
     }
 
-    /**
-     * Set Data Attributes on Tabs Component
-     * @param  {instance} The settings for this instance
-     */
     function getLocalSettings(el) {
       let localSettings = {},
           data = el.dataset;
@@ -231,11 +216,6 @@
       return localSettings;
     }
 
-    /**
-     * The constructor object
-     * @param {String} selector The selector for the element to render into
-     * @param {Object} options  User options and settings
-     */
     function Constructor(el, options = {}) {
       
       //Add CSS Function
@@ -257,10 +237,10 @@
       addCustomCursor(this);
 
       // Add Loading Event Listener
-      createLoadListener(this);
+      //createLoadListener(this);
 
       // Add Resize Event Listener
-      createResizeListener(this);
+      //createResizeListener(this);
 
       // Create the Toggle event listener
       createHoverListener(this);
@@ -331,13 +311,8 @@
           }
         }
       })
-    }
+    } 
     
-    /**
-     * The constructor object
-     * @param {String} selector The selector for the element to render into
-     * @param {Object} options  User options and settings
-     */
     function Constructor(el, options = {}) {
       
       // Add Elements Obj
@@ -374,7 +349,11 @@
       addClasses(this)
       
       //Init
-      this.elements.images.forEach(img => new WMImageZoom(img.parentElement))
+      this.elements.images.forEach(img => {
+        new WMImageZoom(img.parentElement)
+      })
+
+
     }
 
     return Constructor;
@@ -382,9 +361,18 @@
   
   function initImageZoom() {
     if (utils.preventPlugin()) return;
-
+    
     //Build HTML from Selectors
-    let initImageBlocks = document.querySelectorAll('.sqs-block-image:not([data-wm-image-zoom]), .sqs-block-product:not([data-wm-image-zoom]), .gallery-block:not([data-wm-image-zoom]), .gallery-grid--layout-grid:not([data-wm-image-zoom]), .gallery-strips--layout-strips:not([data-wm-image-zoom]), .gallery-section .gallery-masonry:not([data-wm-image-zoom])');
+    let initImageBlocks = document.querySelectorAll(`
+    .sqs-block-image:not([data-wm-image-zoom]), 
+    .sqs-block-product:not([data-wm-image-zoom]), 
+    .gallery-block:not([data-wm-image-zoom]), 
+    .gallery-grid--layout-grid:not([data-wm-image-zoom]), 
+    .gallery-strips--layout-strips:not([data-wm-image-zoom]), 
+    .gallery-section .gallery-masonry:not([data-wm-image-zoom]),
+    .products-list .grid-item:not([data-wm-image-zoom]),
+    .ProductItem-gallery-slides-item:not([data-wm-image-zoom])
+    `);
     for (const el of initImageBlocks) {
       let value = utils.getPropertyValue(el, '--wm-image-zoom');
       if (value.includes('true')) {
