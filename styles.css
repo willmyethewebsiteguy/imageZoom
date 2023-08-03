@@ -67,6 +67,16 @@ Copyright Will-Myers
   height: 0 !important;
 }
 
+/*For Product Section Images*/
+.products-list .grid-item[data-wm-image-zoom] .grid-image{
+  pointer-events: initial;
+}
+
+/*For Product Details Pages*/
+.ProductItem-gallery-slides-item[data-wm-image-zoom] .product-image-zoom-duplicate{
+  display:none !important;
+}
+
 
 /*For Lightbox Sections*/
 [data-wm-image-zoom][data-lightbox-section-id] .gallery-lightbox-control{
